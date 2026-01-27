@@ -1,4 +1,22 @@
+using ECommerceTask.Infrastructure.Data;
+using ECommerceTask.Infrastructure.Repositories;
+using ECommerceTask.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ECommerceDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
 
 // Add services to the container.
 
