@@ -3,6 +3,7 @@ using ECommerceTask.Infrastructure.Repositories;
 using ECommerceTask.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using ECommerceTask.Application;
+using ECommerceTask.Infrastructure.Services;
 
 
 
@@ -18,6 +19,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddApplicationRegistration();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 
 
