@@ -2,6 +2,7 @@ using ECommerceTask.Infrastructure.Data;
 using ECommerceTask.Infrastructure.Repositories;
 using ECommerceTask.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ECommerceTask.Application;
 
 
 
@@ -15,6 +16,8 @@ builder.Services.AddDbContext<ECommerceDbContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddApplicationRegistration();
 
 
 
