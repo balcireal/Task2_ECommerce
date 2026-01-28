@@ -21,7 +21,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddApplicationRegistration();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["RedisSettings:Url"];
+});
 
 // Add services to the container.
 
