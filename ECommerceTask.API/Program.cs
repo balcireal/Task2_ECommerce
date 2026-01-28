@@ -4,6 +4,7 @@ using ECommerceTask.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using ECommerceTask.Application;
 using ECommerceTask.Infrastructure.Services;
+using ECommerceTask.API.Middlewares;
 
 
 
@@ -43,6 +44,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 
