@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{EDF4FC3F-0C1D-4772-9031-D0234FA3791C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProductService", "ProductService", "{38EE37F2-0F25-4B6A-A376-08025345C458}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerceTask.API", "Services\ProductService\ECommerceTask.API\ECommerceTask.API.csproj", "{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthService", "AuthService", "{25492ABE-8735-443F-9D80-878EC5051114}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.API", "Services\AuthService\AuthService.API\AuthService.API.csproj", "{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateways", "Gateways", "{88A7914E-66BD-4A93-AF8F-CDC4145572EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "Gateways\ApiGateway\ApiGateway.csproj", "{F002A257-D4F3-4603-999C-240E1A82494B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F002A257-D4F3-4603-999C-240E1A82494B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F002A257-D4F3-4603-999C-240E1A82494B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F002A257-D4F3-4603-999C-240E1A82494B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F002A257-D4F3-4603-999C-240E1A82494B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{38EE37F2-0F25-4B6A-A376-08025345C458} = {EDF4FC3F-0C1D-4772-9031-D0234FA3791C}
+		{C2BD5202-BEDC-4B1A-8708-1451EB0F91F0} = {38EE37F2-0F25-4B6A-A376-08025345C458}
+		{25492ABE-8735-443F-9D80-878EC5051114} = {EDF4FC3F-0C1D-4772-9031-D0234FA3791C}
+		{2EB639B0-3CE3-4F9B-89E4-EC29C65FC5CB} = {25492ABE-8735-443F-9D80-878EC5051114}
+		{F002A257-D4F3-4603-999C-240E1A82494B} = {88A7914E-66BD-4A93-AF8F-CDC4145572EE}
+	EndGlobalSection
+EndGlobal
