@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ECommerceTask.Application.DTOs;
 using ECommerceTask.Core.Entities;
+using ECommerceTask.Application.Features.Products.Commands.CreateProduct;
 
 namespace ECommerceTask.Application.Mappings
 {
@@ -9,7 +10,7 @@ namespace ECommerceTask.Application.Mappings
         public GeneralMapping()
         {
             CreateMap<Product, ProductDto>().ReverseMap();
-            // CreateMap<User, UserDto>().ReverseMap(); 
+            CreateMap<CreateProductCommand, Product>();
         }
     }
 }
