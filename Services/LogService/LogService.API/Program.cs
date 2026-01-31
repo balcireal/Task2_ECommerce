@@ -4,13 +4,21 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+var seqUrl = builder.Configuration["Seq:Url"] ?? "http://localhost:5341";
+var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+var rabbitMqUser = builder.Configuration["RabbitMq:Username"] ?? "guest";
+var rabbitMqPass = builder.Configuration["RabbitMq:Password"] ?? "guest";
+
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
-    .WriteTo.Seq("http://localhost:5341")
+    .WriteTo.Seq(seqUrl)
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
 
 builder.Services.AddMassTransit(x =>
 {
@@ -18,12 +26,11 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host(rabbitMqHost, "/", h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(rabbitMqUser);
+            h.Password(rabbitMqPass);
         });
-
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -34,14 +41,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

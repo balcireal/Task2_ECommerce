@@ -19,9 +19,17 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services.AddApplicationRegistration();
 
+var redisConfig = builder.Configuration["Redis:Url"] ?? "localhost:6379";
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["RedisSettings:Url"];
+    options.Configuration = redisConfig;
+    options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
+    {
+        EndPoints = { redisConfig },
+        AbortOnConnectFail = false,
+        ConnectTimeout = 5000
+    };
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -38,17 +46,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddMassTransit(x =>
 {
-x.UsingRabbitMq((context, cfg) =>
-{
-    cfg.Host("localhost", "/", h =>
+    var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+    var rabbitMqUser = builder.Configuration["RabbitMq:Username"] ?? "guest";
+    var rabbitMqPass = builder.Configuration["RabbitMq:Password"] ?? "guest";
+
+    x.UsingRabbitMq((context, cfg) =>
     {
-        h.Username("guest");
-        h.Password("guest");
+        cfg.Host(rabbitMqHost, "/", h =>
+        {
+            h.Username(rabbitMqUser);
+            h.Password(rabbitMqPass);
+        });
     });
 });
-});
-
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -60,6 +70,21 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ECommerceDbContext>();
+        context.Database.Migrate();
+        Console.WriteLine("--> Veritabaný Migration iþlemi baþarýyla tamamlandý.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("--> Migration sýrasýnda hata oluþtu: " + ex.Message);
+    }
 }
 
 app.UseHttpsRedirection();

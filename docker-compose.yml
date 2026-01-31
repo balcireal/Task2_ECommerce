@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # --- INFRASTRUCTURE ---
+
+  productdb:
+    image: postgres:15-alpine
+    container_name: ecommerce_postgres
+    environment:
+      - POSTGRES_DB=ProductDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: ecommerce_redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ecommerce_rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  seq:
+    image: datalust/seq:latest
+    container_name: ecommerce_seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=12345678
+    ports:
+      - "5341:80"
+    volumes:
+      - seq_data:/data
+
+  # --- MICROSERVICES ---
+
+  product-service:
+    build:
+      context: .
+      dockerfile: Services/ProductService/ECommerceTask.API/Dockerfile
+    container_name: ecommerce_product_api
+    ports:
+      - "5002:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=productdb;Database=ProductDb;Username=postgres;Password=postgres
+      - RabbitMq__Host=rabbitmq
+      - Redis__Url=redis:6379
+    depends_on:
+      - productdb
+      - rabbitmq
+      - redis
+
+  log-service:
+    build:
+      context: Services/LogService/LogService.API
+      dockerfile: Dockerfile
+    container_name: ecommerce_log_api
+    ports:
+      - "5003:80"
+    environment:
+      - RabbitMq__Host=rabbitmq
+      - Seq__Url=http://seq
+    depends_on:
+      - rabbitmq
+      - seq
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Services/AuthService/AuthService.API/Dockerfile
+    container_name: ecommerce_auth_api
+    ports:
+      - "5001:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=productdb;Database=ProductDb;Username=postgres;Password=postgres
+    depends_on:
+      - productdb
+
+  api-gateway:
+    build:
+      context: Gateways/ApiGateway
+      dockerfile: Dockerfile
+    container_name: ecommerce_gateway
+    ports:
+      - "5000:80"
+    environment:
+      
+      - ReverseProxy__Clusters__productCluster__Destinations__destination1__Address=http://product-service
+      
+      - ReverseProxy__Clusters__product-cluster__Destinations__destination1__Address=http://product-service
+      
+     
+      - ReverseProxy__Clusters__authCluster__Destinations__destination1__Address=http://auth-service
+      - ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address=http://auth-service
+    depends_on:
+      - product-service
+      - auth-service
+
+volumes:
+  postgres_data:
+  seq_data:
