@@ -1,18 +1,34 @@
-# E-Commerce Backend (Task 2)
+# 🚀 E-Commerce Microservices Case Study
 
-Bu proje, Onion Architecture prensipleri kullanılarak geliştirilmiş, ölçeklenebilir bir E-Ticaret backend servisidir.
+Bu proje; **.NET 7**, **Docker**, **RabbitMQ**, **Redis** ve **Seq** teknolojileri kullanılarak geliştirilmiş, **Onion Architecture** ve **CQRS** desenlerini uygulayan modern bir mikroservis mimarisi çözümüdür.
 
-## 🚀 Kullanılan Teknolojiler
-* **.NET 7** (Web API)
-* **PostgreSQL** (Veritabanı)
-* **Entity Framework Core** (ORM)
-* **Redis** (Distributed Caching)
-* **MediatR** (CQRS Pattern)
-* **JWT** (Authentication)
-* **AutoMapper** (Mapping)
-* **Docker** (Redis servisi için)
+Proje, **12 Faktör Uygulama (12-Factor App)** prensiplerine uygun olarak tasarlanmış ve tam konteynerizasyon (Dockerization) sağlanmıştır.
 
-## 🛠 Kurulum ve Çalıştırma
+---
+
+## 🏗️ Mimari ve Teknolojiler
+
+Proje, bağımsız çalışabilen ancak birbiriyle haberleşen 4 ana servisten oluşur:
+
+| Servis | Teknoloji / Kütüphane | Görevi |
+| :--- | :--- | :--- |
+| **API Gateway** | YARP (Reverse Proxy) | Tüm dış istekleri karşılar ve ilgili mikroservise yönlendirir. |
+| **Product Service** | .NET 7, PostgreSQL, Redis | Ürün ekleme/listeleme işlemlerini yönetir. CQRS kullanır. |
+| **Auth Service** | .NET 7, JWT | Kimlik doğrulama işlemlerini yönetir (Taslak). |
+| **Log Service** | .NET 7, RabbitMQ, Seq | Sistemdeki olayları kuyruktan dinler ve merkezi log sunucusuna yazar. |
+
+### 🛠️ Kullanılan Altyapı Araçları
+* **Veritabanı:** PostgreSQL 15 (Alpine)
+* **Cache:** Redis (Distributed Cache)
+* **Message Broker:** RabbitMQ (MassTransit)
+* **Logging:** Serilog & Datalust Seq
+* **Containerization:** Docker & Docker Compose
+
+---
+
+## 🚀 Kurulum ve Çalıştırma (Tek Komut)
+
+Proje, veritabanı kurulumları ve migration işlemleri dahil olmak üzere **tam otomatize** edilmiştir. Bilgisayarınızda **Docker Desktop**'ın kurulu olması yeterlidir.
 
 1.  **Projeyi Klonlayın:**
     ```bash
@@ -20,23 +36,73 @@ Bu proje, Onion Architecture prensipleri kullanılarak geliştirilmiş, ölçekl
     cd Task2_ECommerce
     ```
 
-2.  **Redis'i Ayağa Kaldırın (Docker):**
+2.  **Sistemi Ayağa Kaldırın:**
+    Terminalde proje ana dizinindeyken şu komutu çalıştırın:
     ```bash
-    docker run -d -p 6379:6379 --name redis_db redis
+    docker-compose up --build
     ```
 
-3.  **Veritabanı Ayarı:**
-    `API/appsettings.json` dosyasındaki Connection String'i kendi PostgreSQL bilgilerinizle güncelleyin.
+    *Bu işlem; PostgreSQL, Redis, RabbitMQ ve Seq sunucularını kuracak, ardından mikroservisleri derleyip başlatacaktır. Product Service açılırken veritabanı tablolarını **otomatik olarak (Auto-Migration)** oluşturur.*
 
-4.  **Veritabanını Oluşturun:**
-    ```bash
-    dotnet ef database update --project ECommerceTask.Infrastructure --startup-project ECommerceTask.API
+---
+
+## 📡 Servis Adresleri ve Erişim
+
+Sistem ayağa kalktığında aşağıdaki adreslerden servislere erişebilirsiniz:
+
+| Panel / Servis | Adres | Açıklama |
+| :--- | :--- | :--- |
+| **API Gateway (Ana Giriş)** | `http://localhost:5000` | Tüm API istekleri buraya atılmalıdır. |
+| **Seq (Log Paneli)** | `http://localhost:5341` | Tüm logları buradan izleyebilirsiniz. |
+| **RabbitMQ Paneli** | `http://localhost:15672` | Kullanıcı: `guest` / Şifre: `guest` |
+| **Product Service (Internal)**| `http://localhost:5002` | Sadece geliştirme/debug amaçlıdır. |
+
+---
+
+## 🧪 Test Senaryoları (Postman)
+
+Sistemin çalıştığını doğrulamak için aşağıdaki adımları izleyebilirsiniz:
+
+### 1. Ürün Ekleme (CQRS + RabbitMQ Testi)
+Gateway üzerinden ürün eklediğinizde, ürün veritabanına yazılır ve RabbitMQ'ya bir "ProductCreated" eventi fırlatılır.
+
+* **URL:** `POST http://localhost:5000/api/products`
+* **Body (JSON):**
+    ```json
+    {
+      "name": "Docker Test Urunu",
+      "description": "Mikroservis mimarisi ile eklendi.",
+      "price": 1500,
+      "stock": 50
+    }
     ```
+* **Beklenen Sonuç:** `200 OK` veya `201 Created`.
 
-5.  **Uygulamayı Başlatın:**
-    ```bash
-    dotnet run --project ECommerceTask.API
-    ```
+### 2. Log Kontrolü (Async Communication Testi)
+Ürün eklendikten sonra **Seq Paneline (`http://localhost:5341`)** gidin. Events ekranında şu logu görmelisiniz:
+> `[RabbitMQ] Yeni ürün yakalandı! ID: ..., İsim: Docker Test Urunu...`
 
-## 🧪 Test (Swagger)
-Uygulama çalıştığında `https://localhost:xxxx/swagger` adresinden API dokümantasyonuna erişebilirsiniz.
+Bu log, Product Service ile Log Service'in RabbitMQ üzerinden başarıyla konuştuğunu kanıtlar.
+
+### 3. Cache Kontrolü (Redis Testi)
+* **URL:** `GET http://localhost:5000/api/products`
+* **Sonuç:** Eklediğiniz ürün listelenmelidir. İlk istek veritabanından, sonraki istekler **Redis Cache** üzerinden gelir.
+
+---
+
+## 📂 Proje Yapısı (Onion Architecture)
+
+```text
+Task2_ECommerce/
+├── Gateways/
+│   └── ApiGateway       # YARP Reverse Proxy
+├── Services/
+│   ├── AuthService      # Kimlik Doğrulama Servisi
+│   ├── LogService       # Consumer (RabbitMQ Dinleyicisi)
+│   └── ProductService/  # Ana İş Mantığı
+│       ├── .API         # Sunum Katmanı (Controllers)
+│       ├── .Application # CQRS, DTOs, Mappers
+│       ├── .Core        # Domain Entities, Interfaces
+│       └── .Infrastructure # Data Access, Migrations, External Services
+├── docker-compose.yml   # Orkestrasyon Dosyası
+└── README.md
